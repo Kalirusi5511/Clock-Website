@@ -1,0 +1,101 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #0f0f0f;
+    color: white;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+h1 {
+    color: #4CAF50; /* Ein leuchtendes Grün für die Hauptüberschrift */
+}
+
+.card {
+    background-color: #1c1c1c;
+    padding: 25px;
+    margin: 20px auto;
+    border-radius: 12px;
+    max-width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card h2 {
+    margin-top: 0;
+    color: #f0f0f0;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+#clock {
+    font-size: 3em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #4CAF50; /* Grün für die Live-Uhr */
+}
+
+#timer, #stopwatch {
+    font-size: 2em;
+    font-weight: bold;
+    margin-top: 15px;
+    color: #FFC107; /* Gelb für Timer und Stoppuhr */
+}
+
+input[type="number"] {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+    border: 1px solid #333;
+    background-color: #2c2c2c;
+    color: white;
+    width: 80px;
+    text-align: center;
+}
+
+input[type="number"]::placeholder {
+    color: #aaa;
+}
+
+button {
+    margin: 10px 5px;
+    padding: 10px 18px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+button:active {
+    background-color: #3e8e41;
+}
+
+/* Spezielle Stile für Stoppuhr-Buttons, falls gewünscht */
+button[onclick*="stopStopwatch"] {
+    background-color: #f44336; /* Rot für Stop */
+}
+
+button[onclick*="stopStopwatch"]:hover {
+    background-color: #da190b;
+}
+
+button[onclick*="resetStopwatch"] {
+    background-color: #ff9800; /* Orange für Reset */
+}
+
+button[onclick*="resetStopwatch"]:hover {
+    background-color: #e68a00;
+}
