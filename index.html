@@ -5,6 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clock Website</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* Grundlegendes Styling für bessere Lesbarkeit und Funktion */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin: 15px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card h2 {
+            color: #3498db;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        #clock, #timer, #stopwatch {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 20px;
+            display: block; /* Stellt sicher, dass sie als Blockelemente dargestellt werden */
+        }
+        input[type="number"] {
+            width: 80px;
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 1em;
+            text-align: center;
+            box-sizing: border-box; /* Padding wird in die Breite einbezogen */
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s ease-in-out;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:active {
+            background-color: #1f618d;
+        }
+        /* Spezifisches Styling für Timer/Stoppuhr-Buttons */
+        .card button:nth-of-type(1) { /* Start-Buttons */
+            background-color: #2ecc71;
+        }
+        .card button:nth-of-type(1):hover {
+            background-color: #27ae60;
+        }
+        .card button:nth-of-type(2) { /* Stop-Button (nur Stoppuhr) */
+            background-color: #e67e22;
+        }
+        .card button:nth-of-type(2):hover {
+            background-color: #d35400;
+        }
+        .card button:nth-of-type(3) { /* Reset-Button */
+            background-color: #95a5a6;
+        }
+        .card button:nth-of-type(3):hover {
+            background-color: #7f8c8d;
+        }
+    </style>
 </head>
 <body>
     <h1>⏰ Clock Website</h1>
@@ -18,21 +116,151 @@
     <!-- TIMER -->
     <div class="card">
         <h2>Timer</h2>
-        <input id="min" type="number" placeholder="Minuten" min="0">
-        <input id="sec" type="number" placeholder="Sekunden" min="0" max="59">
-        <button onclick="startTimer()">Start</button>
+        <!-- Eingabefelder bleiben bearbeitbar -->
+        <input id="min" type="number" placeholder="Minuten" min="0" value="0">
+        <input id="sec" type="number" placeholder="Sekunden" min="0" max="59" value="0">
+        <button onclick="startTimer()">Start/Neustart</button>
         <div id="timer">00:00</div>
     </div>
 
     <!-- STOPPUHR -->
     <div class="card">
         <h2>Stoppuhr</h2>
-        <div id="stopwatch">00:00</div>
+        <div id="stopwatch">00:00:00</div>
         <button onclick="startStopwatch()">Start</button>
         <button onclick="stopStopwatch()">Stop</button>
         <button onclick="resetStopwatch()">Reset</button>
     </div>
 
-    <script src="/static/app.js"></script>
+    <script>
+        // --- Live Uhr ---
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock(); // Initialaufruf für sofortige Anzeige
+
+        // --- Timer ---
+        let timerInterval = null;
+        let currentTimerTotalSeconds = 0;
+
+        function formatTime(totalSeconds) {
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            const minutesInput = document.getElementById('min');
+            const secondsInput = document.getElementById('sec');
+            const timerDisplay = document.getElementById('timer');
+
+            // Wenn ein Timer läuft, stoppen wir ihn zuerst.
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            // Werte aus den Eingabefeldern lesen.
+            // Die Felder bleiben bearbeitbar, werden aber nicht deaktiviert.
+            let minutes = parseInt(minutesInput.value);
+            let seconds = parseInt(secondsInput.value);
+
+            // Sicherstellen, dass gültige Zahlen eingegeben werden, und Standardwerte setzen, falls ungültig.
+            if (isNaN(minutes) || minutes < 0) {
+                minutes = 0;
+                minutesInput.value = '00'; // Eingabefeld auch aktualisieren
+            }
+            if (isNaN(seconds) || seconds < 0 || seconds > 59) {
+                seconds = 0;
+                secondsInput.value = '00'; // Eingabefeld auch aktualisieren
+            }
+
+            // Die Eingabewerte auf 2 Stellen formatieren und anzeigen.
+            minutesInput.value = String(minutes).padStart(2, '0');
+            secondsInput.value = String(seconds).padStart(2, '0');
+
+            currentTimerTotalSeconds = minutes * 60 + seconds;
+
+            // Die Timer-Anzeige sofort mit dem neuen Wert aktualisieren.
+            timerDisplay.textContent = formatTime(currentTimerTotalSeconds);
+
+            // Nur starten, wenn mehr als 0 Sekunden eingestellt sind.
+            if (currentTimerTotalSeconds > 0) {
+                timerInterval = setInterval(() => {
+                    currentTimerTotalSeconds--;
+                    timerDisplay.textContent = formatTime(currentTimerTotalSeconds);
+
+                    if (currentTimerTotalSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null; // Interval auf null setzen, wenn abgelaufen.
+                        alert('Zeit abgelaufen!'); // Optional: Benachrichtigung
+                    }
+                }, 1000);
+            }
+        }
+
+        // Optional: Event Listener hinzufügen, um Änderungen an den Input-Feldern direkt zu verarbeiten.
+        // Dies ermöglicht das Ändern der Zeit, während der Timer läuft oder gestoppt ist.
+        document.getElementById('min').addEventListener('input', function() {
+            if (!timerInterval) { // Nur aktualisieren, wenn der Timer nicht aktiv ist, um das Laufverhalten nicht zu stören
+                const minutes = parseInt(this.value);
+                const seconds = parseInt(document.getElementById('sec').value);
+                document.getElementById('timer').textContent = formatTime(minutes * 60 + (isNaN(seconds) ? 0 : seconds));
+            }
+        });
+        document.getElementById('sec').addEventListener('input', function() {
+            if (!timerInterval) { // Nur aktualisieren, wenn der Timer nicht aktiv ist
+                const minutes = parseInt(document.getElementById('min').value);
+                const seconds = parseInt(this.value);
+                 if (seconds > 59) { // Begrenzen auf 59 Sekunden
+                    this.value = '59';
+                    seconds = 59;
+                }
+                document.getElementById('timer').textContent = formatTime((isNaN(minutes) ? 0 : minutes) * 60 + seconds);
+            }
+        });
+
+
+        // --- Stoppuhr ---
+        let stopwatchInterval = null;
+        let stopwatchTotalSeconds = 0;
+        let isRunning = false;
+
+        function formatStopwatchTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function startStopwatch() {
+            if (!isRunning) {
+                isRunning = true;
+                stopwatchInterval = setInterval(() => {
+                    stopwatchTotalSeconds++;
+                    document.getElementById('stopwatch').textContent = formatStopwatchTime(stopwatchTotalSeconds);
+                }, 1000);
+            }
+        }
+
+        function stopStopwatch() {
+            if (isRunning) {
+                clearInterval(stopwatchInterval);
+                isRunning = false;
+            }
+        }
+
+        function resetStopwatch() {
+            stopwatchTotalSeconds = 0;
+            document.getElementById('stopwatch').textContent = formatStopwatchTime(0);
+            clearInterval(stopwatchInterval);
+            isRunning = false;
+        }
+    </script>
 </body>
 </html>
